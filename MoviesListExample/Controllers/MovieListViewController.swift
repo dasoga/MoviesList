@@ -22,7 +22,14 @@ class MovieListViewController: UIViewController {
         return table
     }()
     
-    let cellId = "cellIdentifier"
+    let activityIndicator: UIActivityIndicatorView = {
+        let ai = UIActivityIndicatorView()
+        ai.activityIndicatorViewStyle = .gray
+        ai.startAnimating()
+        ai.hidesWhenStopped = true
+        ai.translatesAutoresizingMaskIntoConstraints = false
+        return ai
+    }()
     
     var moviesList: [Movie] = []
     var moviesLocations: [String] = []
@@ -37,10 +44,16 @@ class MovieListViewController: UIViewController {
         // Call this function to setup view and all the elements inside it.
         setupView()
         // Register movie cell
-        moviesTable.register(MovieTableViewCell.self, forCellReuseIdentifier: cellId)
+        moviesTable.register(MovieTableViewCell.self, forCellReuseIdentifier: Constants.movieCellIdentifier)
         
         
         Network.sharedInstance.getAllMovies { (movies) in
+            DispatchQueue.main.async {
+                // Stop activity indicator
+                self.activityIndicator.stopAnimating()
+            }
+            
+            // Unwrap value safely.
             guard let allMovies = movies else { return }
             self.moviesList = allMovies
             
@@ -74,6 +87,10 @@ class MovieListViewController: UIViewController {
         moviesTable.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         moviesTable.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         moviesTable.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        
+        view.addSubview(activityIndicator)
+        activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
     }
     
     /*
@@ -114,7 +131,7 @@ extension MovieListViewController: UITableViewDataSource, UITableViewDelegate{
     // UITable datasource
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = moviesTable.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! MovieTableViewCell
+        let cell = moviesTable.dequeueReusableCell(withIdentifier: Constants.movieCellIdentifier, for: indexPath) as! MovieTableViewCell
         cell.accessoryType = .disclosureIndicator
         cell.movie = moviesByLocation[indexPath.section][indexPath.row]
         return cell
@@ -135,7 +152,7 @@ extension MovieListViewController: UITableViewDataSource, UITableViewDelegate{
     // UITable delegate
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 88
+        return 118
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
