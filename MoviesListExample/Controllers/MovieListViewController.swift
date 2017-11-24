@@ -72,6 +72,9 @@ class MovieListViewController: UIViewController {
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         navigationController?.navigationBar.barStyle = .black
+        
+        let searchController = UISearchController(searchResultsController: nil)
+        navigationItem.searchController = searchController
     }
     
     /*
