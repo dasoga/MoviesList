@@ -11,5 +11,12 @@ import Foundation
 struct Movie: Decodable {
     let title: String?
     let locations: String?
+    let releaseYear: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case title
+        case locations
+        case releaseYear = "release_year"
+    }
 }
 

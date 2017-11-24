@@ -16,7 +16,7 @@ class MovieListViewController: UIViewController {
     
     lazy var moviesTable: UITableView = {
         let table = UITableView()
-//        table.delegate = self
+        table.delegate = self
         table.dataSource = self
         table.translatesAutoresizingMaskIntoConstraints = false
         return table
@@ -36,7 +36,7 @@ class MovieListViewController: UIViewController {
         // Call this function to setup view and all the elements inside it.
         setupView()
         // Register movie cell
-        moviesTable.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
+        moviesTable.register(MovieTableViewCell.self, forCellReuseIdentifier: cellId)
         
         
         Network.sharedInstance.getAllMovies { (movies) in
@@ -110,10 +110,11 @@ class MovieListViewController: UIViewController {
  Extension of our controller to conform UITableView protocols and show cells
 */
 
-extension MovieListViewController: UITableViewDataSource{
+extension MovieListViewController: UITableViewDataSource, UITableViewDelegate{
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = moviesTable.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        cell.textLabel?.text = moviesByLocation[indexPath.section][indexPath.row].title
+        let cell = moviesTable.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! MovieTableViewCell
+        cell.accessoryType = .disclosureIndicator
+        cell.movie = moviesByLocation[indexPath.section][indexPath.row]
         return cell
     }
     
@@ -128,6 +129,11 @@ extension MovieListViewController: UITableViewDataSource{
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return moviesLocations[section]
     }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 88
+    }
+    
 }
 
 extension Sequence where Iterator.Element: Hashable {
