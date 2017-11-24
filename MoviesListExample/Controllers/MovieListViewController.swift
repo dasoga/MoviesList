@@ -23,6 +23,11 @@ class MovieListViewController: UIViewController {
     }()
     
     let cellId = "cellIdentifier"
+    
+    var moviesList: [Movie] = []
+    var moviesLocations: [String] = []
+    
+    var moviesByLocation: [[Movie]] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,9 +36,15 @@ class MovieListViewController: UIViewController {
         // Call this function to setup view and all the elements inside it.
         setupView()
         // Register movie cell
-        
         moviesTable.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
         
+        
+        Network.sharedInstance.getAllMovies { (movies) in
+            guard let allMovies = movies else { return }
+            self.moviesList = allMovies
+            
+            self.setupMoviesSections(movies: allMovies)
+        }
     }
     
     // MARK: - Private functions
@@ -43,6 +54,11 @@ class MovieListViewController: UIViewController {
     private func setupNavBar(){
         navigationItem.title = "Movies"
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.barTintColor = .blue
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.barStyle = .black
+
     }
     
     /*
@@ -59,7 +75,35 @@ class MovieListViewController: UIViewController {
         moviesTable.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         moviesTable.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
+    
+    /*
+        Function to setup the sections of table with movies location info.
+     */
+    private func setupMoviesSections(movies: [Movie]){
+        // Save just the movies locations as a filter.
+        let moviesLocationsStrings = movies.flatMap { $0.locations }
+        // Setup movies by locations.
+        setupMoviesByLocation(movies: movies, moviesLocation: moviesLocationsStrings)
+    }
+    
+    /*
+        Function to setup the arrays with movies info, and sections with movies location info.
+    */
+    private func setupMoviesByLocation(movies: [Movie], moviesLocation: [String]){
+        self.moviesLocations = moviesLocation
+        
+        for location in moviesLocation{
+            let filterdMovies = movies.filter { $0.locations == location }
+            moviesByLocation.append(filterdMovies)
+        }
+        
+        // Let main thread manage the refresh to view.
+        DispatchQueue.main.async {
+            self.moviesTable.reloadData()
+        }
+    }
 }
+
 
 
 /*
@@ -69,15 +113,26 @@ class MovieListViewController: UIViewController {
 extension MovieListViewController: UITableViewDataSource{
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = moviesTable.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        cell.textLabel?.text = "Index \(indexPath.row)"
+        cell.textLabel?.text = moviesByLocation[indexPath.section][indexPath.row].title
         return cell
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        return moviesByLocation[section].count
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return moviesLocations.count
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return moviesLocations[section]
+    }
+}
+
+extension Sequence where Iterator.Element: Hashable {
+    func unique() -> [Iterator.Element] {
+        var alreadyAdded = Set<Iterator.Element>()
+        return self.filter { alreadyAdded.insert($0).inserted }
     }
 }
