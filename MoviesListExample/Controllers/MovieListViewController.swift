@@ -28,11 +28,12 @@ class MovieListViewController: UIViewController {
     var moviesLocations: [String] = []
     
     var moviesByLocation: [[Movie]] = []
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Call this function to setup navigation bar.
         setupNavBar()
+        
         // Call this function to setup view and all the elements inside it.
         setupView()
         // Register movie cell
@@ -58,7 +59,6 @@ class MovieListViewController: UIViewController {
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         navigationController?.navigationBar.barStyle = .black
-
     }
     
     /*
@@ -111,6 +111,8 @@ class MovieListViewController: UIViewController {
 */
 
 extension MovieListViewController: UITableViewDataSource, UITableViewDelegate{
+    // UITable datasource
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = moviesTable.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! MovieTableViewCell
         cell.accessoryType = .disclosureIndicator
@@ -130,8 +132,16 @@ extension MovieListViewController: UITableViewDataSource, UITableViewDelegate{
         return moviesLocations[section]
     }
     
+    // UITable delegate
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 88
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let mapController = MapViewController()
+        mapController.movieSelected = moviesByLocation[indexPath.section][indexPath.row]
+        self.navigationController?.pushViewController(mapController, animated: true)
     }
     
 }
